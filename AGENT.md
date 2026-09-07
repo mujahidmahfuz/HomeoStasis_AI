@@ -2412,3 +2412,48 @@ user explicitly asking to.
   that one angle. Not yet done, flagged as the natural next follow-up.
   Do not cite the output-head explanation in any paper draft going
   forward -- update any prior write-up that already used it.
+- 2026-09-08: **Follow-up: center-seed sweep -- FINAL, correct
+  attribution for the whole disturbance-pattern-reversal arc: task
+  difficulty/class separability, not center "direction," architecture,
+  dimensionality, class count, or output-head formulation**
+  (`bio_ai_homeostasis/notebooks/followup_center_seed_sweep_hypothesis.ipynb`,
+  user-requested further follow-up: "sweep multiple center-angle
+  seeds"). A calibration probe before this run revealed inter-class
+  distance varies enormously across random center seeds (0.117 to
+  5.990 in this task's units) while the FIXED-centers distance (5.657,
+  the original toy task's own geometry) sits at the high end of that
+  range -- meaning the previous output-head notebook's "random vs
+  fixed" comparison was never actually controlled for task difficulty
+  at all. Swept 5 center seeds spanning that distance range (D=2, K=2,
+  BCE head, BigMLP, Adam fixed; n=30 seeds; 20 Holm-corrected tests).
+  **Result: a clean, monotonic r=-0.854 correlation between center
+  distance and instability A-vs-C effect size.** Close centers
+  (dist<=2.917): d=+2.02, +2.82, +2.46, all Holm-significant. Far
+  centers (dist>=5.689): d=+0.16, +0.08, both n.s. -- matching the
+  original fixed-centers task's null (d=0.26, n.s. from
+  `followup_bigger_architecture_hypothesis.ipynb`) almost exactly at
+  the same distance regime. Drift stayed mostly null/mixed throughout,
+  unrelated to distance. **This supersedes the previous notebook's
+  "random/off-diagonal placement" attribution** -- direction never
+  mattered independently; it was a confound for distance the whole
+  time, since the one seed (12345) tested there happened to place
+  classes much closer together (dist=2.917) than the fixed-centers task
+  (dist=5.657). **Final mechanism for this entire investigation arc: a
+  harder (lower-margin) classification task leaves the baseline model
+  more exposed to injected gradient noise, giving the reactive
+  controller's LR-boost recovery mechanism more room to help; an easy
+  (well-separated) task is already robust enough that regulation adds
+  nothing measurable.** This is simpler than, and subsumes, every prior
+  attribution in this arc (architecture size, task realism/multi-class+
+  high-D, output-head formulation, center randomness) -- each was
+  really just a different way of making the task harder or easier. It
+  also retroactively explains the task-realism notebook's large effect:
+  a 10-way, 20D task at the same per-sample noise scale is simply a
+  much harder/lower-margin problem than the 2D/2-class toy task,
+  consistent with (not contradicting) this account. **This is the
+  attribution to use in any paper draft going forward** -- architecture,
+  dimensionality, class count, and output-head formulation should all
+  be described as ruled-out alternative explanations investigated along
+  the way, not as contributing causes. This closes the
+  disturbance-pattern-reversal investigation with a mechanistic,
+  quantitatively demonstrated answer.
