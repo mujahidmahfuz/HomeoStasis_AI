@@ -2378,3 +2378,37 @@ user explicitly asking to.
   standalone script and its outputs populated into the notebook per the
   established nbconvert-unreliability workaround, documented
   transparently in the notebook itself.
+- 2026-09-08: **Follow-up: output-head vs. center-geometry isolation --
+  corrects the previous notebook's causal attribution**
+  (`bio_ai_homeostasis/notebooks/followup_output_head_isolation_hypothesis.ipynb`,
+  user-requested further follow-up). The factorial notebook above
+  attributed its D=2,K=2 result to switching BCE/sigmoid to
+  CrossEntropy/softmax, without isolating that from a second,
+  simultaneous change it also made: fixed diagonal class centers
+  (-2,-2)/(2,2) (the original toy task) vs. random-direction
+  unit-sphere centers, radius 3 (the factorial's own generator). This
+  notebook crosses output_head x center_mode directly in a clean 2x2
+  (D=2, BigMLP, Adam fixed, n=30 seeds, 16 Holm-corrected tests).
+  **Result: center geometry is the dominant driver, not output head.**
+  Instability A-vs-C effect sizes: bce/fixed d=0.57, ce/fixed d=0.67
+  (output-head switch moves d by only +0.10); bce/random d=2.46,
+  ce/random d=2.05 (output-head switch moves d by -0.41, opposite
+  sign). Switching center geometry (fixed->random) moves d by +1.89
+  (bce) or +1.38 (ce) -- large and consistent regardless of output
+  head. **The previous notebook's stated conclusion (softmax/
+  cross-entropy formulation is the precondition) is WRONG and is
+  superseded by this one** -- it was reached without controlling for
+  the center-geometry confound, the same category of mistake that
+  motivated running the factorial investigation in the first place.
+  Corrected attribution: off-diagonal/random class-center placement,
+  not the loss/output-head formulation, determines whether the
+  controller shows an instability-benefit on this synthetic task.
+  Mechanism is flagged as an untested hypothesis only (fixed centers
+  sit on a symmetric diagonal plausibly easier for a freshly-initialized
+  ReLU MLP; random-direction centers at this specific seed's angle may
+  produce a harder-conditioned landscape) -- a systematic sweep over
+  multiple center-angle seeds would be needed to know if this
+  generalizes beyond seed 12345's particular placement or is a fluke of
+  that one angle. Not yet done, flagged as the natural next follow-up.
+  Do not cite the output-head explanation in any paper draft going
+  forward -- update any prior write-up that already used it.
