@@ -2171,12 +2171,6 @@ user explicitly asking to.
   after real, reproducible failures (408->416 for instability/C: 3
   silent kills; 409->417 for instability/Sham: reproducible CUDA OOM
   during backward()), both swapped before either produced any output.
-  Next: step 22 (hallucination testing) is now unblocked (a real
-  generation-capable LM exists), though the user may want to first
-  decide whether to retest step 23c with a longer post-onset window
-  given the null result's ambiguity between "doesn't transfer" and
-  "under-tested." The Adam-adaptivity follow-up (flagged after 23a) also
-  remains open, not started.
 - 2026-09-06: **Stage E's step 22 (hallucination testing) REOPENED AND
   COMPLETED** (`bio_ai_homeostasis/notebooks/step22_hallucination_testing.ipynb`)
   -- user chose to proceed with step 22 over retesting 23c. Since no
@@ -2213,3 +2207,174 @@ user explicitly asking to.
   let a controller-vs-baseline difference show up in either the 23c
   training-trajectory metrics or a hallucination re-test; (b) the
   Adam-adaptivity follow-up flagged after 23a/23b, still not started.
+- 2026-09-06: **The Adam-adaptivity follow-up hypothesis is REJECTED**
+  (`bio_ai_homeostasis/notebooks/followup_adam_adaptivity_hypothesis.ipynb`).
+  Tested whether switching the base optimizer alone (SGD vs Adam),
+  holding Stage D's exact toy 2D task and TinyNN architecture fixed,
+  reproduces the drift/instability disturbance-pattern reversal seen
+  when moving to Adam-based real-data experiments (23a/23b/23c). It does
+  not: n=30 seeds, the controller shows no instability benefit (d=0.06
+  SGD / d=0.08 Adam, both n.s.) and a strong, near-identical drift
+  benefit (SGD d=1.20, Adam d=1.12, both p<0.0001, both survive Holm)
+  under BOTH optimizers. This falsifies the hypothesis that Adam's
+  per-parameter adaptivity absorbs drift and explains the reversal --
+  the real explanation must lie in the task/data characteristics
+  (synthetic 2D clusters vs. real images/tokens) or the architecture
+  (2-16-1 net vs. MLP/LSTM/LoRA-adapted transformer), neither of which
+  this follow-up varied. Genuinely executed via nbconvert (pure CPU
+  work proved fully reliable, unlike the GPU steps' session-boundary
+  issues). **This closes the hypothesis as answered, not open** --
+  should not be re-flagged as unresolved in future sessions. With this,
+  all three threads flagged at the end of Stage F/step 22 are now
+  resolved except (a) the possible retest of step 23c/22 with a longer
+  training budget, which remains genuinely open.
+- 2026-09-07: **Follow-up to the Adam-adaptivity result: architecture
+  complexity, not optimizer choice, eliminates the drift-benefit
+  finding** (`bio_ai_homeostasis/notebooks/followup_architecture_hypothesis.ipynb`,
+  user-requested next step after the Adam-adaptivity rejection). Held
+  the toy 2D task, disturbances, and Adam optimizer fixed from the prior
+  follow-up; swapped only TinyNN (2-16-1) for a deeper/wider MLP
+  (2-64-64-1). A 1-seed probe suggested the controller might even hurt on
+  drift with the bigger net; an `up_mult` sweep confirmed this was the
+  same "toy-calibrated multiplier overshoots on a bigger net" artifact
+  seen repeatedly in 23a/23b/23c -- fixed by recalibrating `up_mult`
+  3.0->1.2 for DeeperMLP before the confirmatory run (TinyNN kept its
+  original, already-validated 3.0). Confirmatory result (n=30 seeds,
+  Holm-Bonferroni corrected, genuinely executed via nbconvert -- pure
+  CPU work continues to be fully reliable on this machine): TinyNN
+  cleanly replicates the drift-benefit (d=1.45, p<0.0001) with no
+  instability benefit (d=0.09, n.s.); DeeperMLP shows **no drift benefit
+  at all** (d=-0.08, n.s. -- not shrunk, gone) and still no instability
+  benefit (d=0.04, n.s.). **Architecture complexity alone is sufficient
+  to eliminate the drift-benefit** the toy net shows so robustly -- but
+  does NOT by itself produce the instability-benefit seen on real
+  MLP/LSTM data (23a: d=0.77-5.83; 23b: d=2.73-9.56). Combined with the
+  Adam-adaptivity rejection, the project's running headline on this
+  question is now: **the disturbance-pattern reversal is driven by
+  architecture, not optimizer choice, but only half-explained even
+  so** -- something about real task/data complexity (not just more
+  layers on synthetic 2D clusters) remains the missing piece for why
+  instability-benefit specifically emerges. Flagged as a further open
+  thread, not yet started, not yet even formally scoped as a next step
+  (would need e.g. a synthetic task with more input dimensions, more
+  classes, or genuine label noise, tested with DeeperMLP, to isolate
+  data-realism from architecture).
+- 2026-09-07: **Follow-up: pushing architecture size further does NOT
+  confirm an instability-benefit** (`bio_ai_homeostasis/notebooks/followup_bigger_architecture_hypothesis.ipynb`,
+  user-requested next step after the architecture-eliminates-drift
+  result). Added a third scale point, **BigMLP (2-256-128-1, ~33,400
+  params)**, matching step23a's real MLP (784-256-128-10) depth/width
+  proportions much more closely than DeeperMLP's 2-64-64-1 did -- same
+  toy task, disturbances, and Adam optimizer held fixed. A 1-seed probe
+  showed a promising instability signal for the first time in this line
+  of follow-ups; the by-now-expected `up_mult` overshoot on drift was
+  recalibrated (3.0->1.2, same value as DeeperMLP) before the
+  confirmatory run. Result (n=30 seeds, Holm-Bonferroni corrected,
+  genuinely executed via nbconvert, ~1200s wall-clock -- pure CPU
+  remains fully reliable): TinyNN and DeeperMLP replicate the prior
+  notebook's numbers exactly; **BigMLP's instability trend is
+  directionally favorable but NOT significant** (A-vs-C d=0.26,
+  p=0.169; Sham-vs-C d=0.14, p=0.44) and drift stays non-significant
+  (d=-0.29, p=0.118, essentially null not reversed). BigMLP's
+  run-to-run variance is 3-4x higher than the smaller architectures --
+  n=30 may simply be underpowered for an effect this size at this
+  scale, not evidence the effect is absent. Reported honestly as an
+  unconfirmed trend, not overclaimed either way. **Architecture size
+  alone, on synthetic 2D data, has still not reproduced the large
+  instability-benefit seen on real MLP/LSTM data (23a d=0.77-5.83, 23b
+  d=2.73-9.56) even at ~500x TinyNN's parameter count.** Genuine
+  task/data complexity (real images, sequences, or realistic label
+  structure) remains the more likely missing ingredient. Recommended
+  next step if pursued: hold architecture fixed at BigMLP's scale and
+  increase task/data realism instead of scaling architecture further
+  (diminishing informational return given the variance problem just
+  found) -- not started, flagged only.
+- 2026-09-07: **Follow-up: task/data realism REPRODUCES the
+  instability-benefit -- resolves the disturbance-pattern-reversal
+  question** (`bio_ai_homeostasis/notebooks/followup_task_realism_hypothesis.ipynb`,
+  user-requested next step). Held architecture fixed at BigMLP's scale
+  (2-256-128-1) and Adam optimizer fixed; made the task itself more
+  realistic instead -- **10 classes (matching MNIST) instead of 2, and
+  20-dimensional input instead of 2D**, keeping the same qualitative
+  Gaussian-cluster structure and disturbance mechanisms. Calibration
+  required reducing disturbance severity (`noise_mult` 3.0->1.0, drift
+  shrink 0.75->0.5) since the architecture follow-ups' constants pushed
+  loss to/past chance level (`ln(10)=2.303`) on this harder task; a
+  10-seed probe then immediately found a striking signal unlike
+  anything in the architecture-only follow-ups. Confirmatory result
+  (n=30 seeds, Holm-Bonferroni corrected): **instability A-vs-C
+  d=3.47 (p<0.0001), Sham-vs-C d=2.98 (p<0.0001), both survive Holm --
+  the largest, cleanest controller-benefit effects in the project's
+  entire history**, comparable to step23b's real LSTM result. **Drift
+  stays cleanly null** (d=-0.03/0.10, both n.s.), matching the
+  architecture follow-ups and Stage F's real-data pattern exactly. **This
+  resolves the open question from the two architecture follow-ups:
+  task/data realism, not architecture size, is what reproduces the
+  instability-benefit seen on real MLP/LSTM data.**
+  **This completes a five-notebook line of investigation into the
+  disturbance-pattern-reversal question, with a clear, well-powered
+  answer**: (1) optimizer choice does not explain the reversal
+  (rejected); (2) architecture complexity eliminates the toy task's
+  drift-benefit but does not by itself produce the instability-benefit
+  (confirmed twice, at two architecture scales); (3) task/data realism
+  DOES reproduce the instability-benefit, strongly and significantly,
+  while independently confirming the drift-benefit's disappearance. The
+  toy 2D binary task's original finding (drift helps, instability
+  doesn't) now appears to have been an artifact of that task's
+  simplicity, not a general property of the controller mechanism --
+  once the task gains even modest, still-fully-synthetic realism, the
+  controller's benefit profile matches what real image/sequence data
+  showed all along. New open thread flagged (not started): this
+  notebook varied multi-class and higher-dimensionality together --
+  which one (or both jointly) is doing the work is unknown; isolating
+  them (10 classes at D=2, or 2 classes at D=20) would answer this.
+  Environment note: `nbconvert` timed out on this notebook despite the
+  identical computation completing in 542s as a plain script moments
+  earlier -- the first CPU-notebook exception to this session's
+  otherwise-reliable pure-CPU-nbconvert pattern (see
+  [[environment-quirks]]); outputs inserted via the same transparent
+  standalone-script workaround used for the GPU notebooks.
+- 2026-09-07: **Follow-up: 2x2 factorial isolates the true driver --
+  neither multi-class nor higher-dimensionality alone is necessary; the
+  real precondition is the loss/output-head formulation**
+  (`bio_ai_homeostasis/notebooks/followup_factorial_realism_hypothesis.ipynb`,
+  user-requested next step after the task-realism resolution). Design:
+  2x2 factorial over D in {2, 20} and K in {2, 10}, holding BigMLP
+  architecture and Adam fixed throughout, n=30 seeds (301-330), both
+  disturbance types, 16 Holm-corrected tests. **Result: the
+  instability-benefit is significant in ALL FOUR cells**, including
+  "D=2,K=2" (d=2.05, p<0.0001) -- nominally the same dimensionality/class
+  count as the ORIGINAL toy task, which showed no instability-benefit
+  under the identical BigMLP architecture
+  (`followup_bigger_architecture_hypothesis.ipynb`, d=0.26, n.s.). This
+  discrepancy was investigated rather than glossed over: the factorial's
+  "D=2,K=2" condition is not actually the same task as the original --
+  it uses `CrossEntropyLoss`/softmax with two logits and random-direction
+  class centers on a radius-3 sphere, while the original toy task
+  (step20 and both architecture follow-ups) uses `BCEWithLogitsLoss`/
+  sigmoid with a single output and two FIXED cluster centers at
+  (-2,-2)/(2,2). **Root cause identified: the softmax/cross-entropy
+  multi-way output-head formulation is the actual precondition for the
+  effect, not literal D or K.** Once that formulation is in place, D and
+  K act as effect-size amplifiers rather than on/off switches -- both
+  push d up substantially on their own (D2_K10: d=5.15; D20_K2: d=3.04),
+  and jointly they push it up the most (D20_K10: d=8.88, replicating the
+  resolving notebook's own result as a sanity check). Drift stayed
+  mostly null/mixed across all four cells, consistent with every prior
+  notebook in this arc. **This reframes the whole five/six-notebook
+  investigation's headline conclusion**: the operative variable was
+  never architecture size or literal task dimensionality/class-count in
+  isolation -- it was switching from a binary sigmoid/BCE output head to
+  a softmax/cross-entropy one, which happened to co-occur with the
+  multi-class/high-D changes in the resolving notebook (a softmax head
+  being the natural choice once K>2) and made them look causally
+  responsible when they were actually secondary amplifiers. Flag this
+  precisely in any paper draft -- do not describe this arc's finding as
+  "task realism drives the effect" without this refinement. Code
+  refactored into a shared, permanently-committed module
+  (`bio_ai_homeostasis/notebooks/factorial_common.py`) parameterizing D
+  and K, rather than duplicating the task generator per condition;
+  confirmatory run (720 total training runs, ~15 min) executed as a
+  standalone script and its outputs populated into the notebook per the
+  established nbconvert-unreliability workaround, documented
+  transparently in the notebook itself.
