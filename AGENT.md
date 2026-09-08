@@ -2457,3 +2457,42 @@ user explicitly asking to.
   the way, not as contributing causes. This closes the
   disturbance-pattern-reversal investigation with a mechanistic,
   quantitatively demonstrated answer.
+- 2026-09-09: **Follow-up: MNIST difficulty sweep -- VALIDATES the
+  task-difficulty account on real data, first fully confirmatory result
+  in this arc**
+  (`bio_ai_homeostasis/notebooks/followup_mnist_difficulty_sweep.ipynb`,
+  user-requested next step: "possible next step" -> "validate the
+  difficulty/margin account on real data"). Reused step23a's exact MLP
+  (784-256-128-10) and controller mechanism unchanged; added a
+  continuous difficulty knob (constant additive Gaussian pixel noise,
+  std in {0.0, 0.4, 0.8, 1.2, 1.6}, applied to every training batch
+  throughout, analogous to shrinking inter-class distance in the toy
+  task's center-seed sweep). n=15 seeds (301-315, reduced from 30 since
+  each real-MNIST run took ~17.8s vs. the toy task's ~1.7s), instability
+  disturbance only, 10 Holm-corrected tests. **Result: r=0.763 between
+  added noise and instability A-vs-C effect size, ALL 10 tests
+  Holm-significant**, growing monotonically from d=2.55 (no added
+  noise) to d=4.27 (heaviest noise). Notably, even at zero added noise
+  the effect was already large (d=2.55) -- consistent with plain
+  10-class MNIST being an inherently harder, lower-margin classification
+  problem than the toy task's easy 2D/2-class setup even without any
+  manipulation, which directly explains why step23a and step23b showed
+  a large instability-benefit natively while the original toy task did
+  not. **Unlike every other follow-up in this arc, this one found no
+  unexamined confound on inspection -- the effect appeared exactly as
+  the difficulty account predicted on the first attempt**, closing the
+  loop the whole investigation opened. `disturbance_reversal_
+  investigation.docx` (project root) updated with a new Section 3.7
+  covering this validation, updated limitations, and updated
+  publication-framing guidance pointing at both the synthetic (center-
+  seed sweep) and real-data (this notebook) demonstrations.
+  Environment note: this run was genuinely interrupted by a
+  background-job kill spanning a session pause/resume boundary, the
+  same signature previously believed exclusive to GPU-active jobs (see
+  [[environment-quirks]]) -- this is the first confirmed case of a
+  CPU-only job being killed this way. The script (originally saving
+  output only once, at the end) lost 3 of 5 completed noise levels'
+  work as a result. Fixed going forward: any multi-minute job on this
+  machine (CPU or GPU) should now checkpoint incrementally, be
+  resumable, and launch inside a self-retrying wrapper -- this
+  superseded the earlier "GPU-only" framing of the interruption risk.
