@@ -2496,3 +2496,38 @@ user explicitly asking to.
   machine (CPU or GPU) should now checkpoint incrementally, be
   resumable, and launch inside a self-retrying wrapper -- this
   superseded the earlier "GPU-only" framing of the interruption risk.
+- 2026-09-09/10: **Qwen3-0.6B+LoRA null follow-up: three checks, three
+  ruled-out explanations** (user-requested: "let's do Qwen3-0.6B+LoRA
+  null"). Check 1 (`qwen_margin_probe.py`, no new training): measured
+  Qwen3-0.6B+LoRA's steady pre-onset loss relative to chance
+  (ln(151936)=11.93): ratio=0.107, in the same regime as MNIST's
+  zero-noise condition (ratio=0.088, which showed d=2.55 -- a LARGE
+  effect), not the toy task's near-zero-effect regime (ratio~0.005-0.018).
+  **The disturbance-reversal arc's task-difficulty account does NOT
+  explain the null -- it predicts the opposite.** Checks 2 and 3
+  (`followup_qwen_capacity_window_hypothesis.ipynb`): tested step23c's
+  own remaining candidates, LoRA capacity (r=8 vs r=64, 8x more
+  trainable params) and post-onset window length (100 vs 300 steps), in
+  a 2x2, n=6 seeds (401-406, exploratory given GPU cost), 8
+  Holm-corrected tests. **Result: all four conditions show the same
+  negligible (~0.09-0.14% relative) loss difference between arms A and
+  C, unmoved by an 8x capacity increase or a 3x longer window -- both
+  ruled out.** One test (r=8,w=100 A-vs-C, exactly step23c's original
+  config) nominally survived Holm with d=-3.505; inspecting raw per-seed
+  values showed this is a **Cohen's-d artifact**, not a real effect --
+  A and C differ by only 0.0013-0.0019 absolute loss (0.14% relative)
+  but with near-zero between-seed variance in that tiny gap, which
+  inflates d without any practical meaning. **Logged as a general
+  methodological caution: Cohen's d measures consistency of a
+  difference, not its practical size -- sanity-check by relative/
+  absolute magnitude whenever d is very large but the underlying means
+  are very close.** Status after three ruled-out explanations: the
+  remaining untested hypothesis from step23c's own list (a pretrained
+  LM's loss landscape near a good initialization may simply be more
+  robust to these disturbances than a from-scratch network's) is now
+  the likely explanation by elimination but has not been directly
+  tested and remains open, flagged for the user to decide whether to
+  pursue further. This run also required a self-retrying,
+  per-run-checkpointed wrapper (~4.1 hours wall-clock, surviving
+  multiple background-job kills and one genuine CUDA runtime error) --
+  see [[environment-quirks]].
