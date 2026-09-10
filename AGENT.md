@@ -2531,3 +2531,37 @@ user explicitly asking to.
   per-run-checkpointed wrapper (~4.1 hours wall-clock, surviving
   multiple background-job kills and one genuine CUDA runtime error) --
   see [[environment-quirks]].
+- 2026-09-11: **Stage G started: full first paper draft
+  (`paper_draft.docx`, project root, ~4500 words), deliberately covering
+  the ENTIRE research arc to date rather than the pre-registered "Paper
+  1" scope.** `plan.doc`'s Stage G (informed by review.doc's W3/S5) had
+  bounded "Paper 1" to toy-scale material only (Stages A/D/E), reserving
+  scale-up/LM-scale/follow-up work for a second paper -- a deliberate
+  reviewer-driven decision to avoid an unbounded scope. This was flagged
+  to the user via AskUserQuestion before drafting anything; the user
+  chose "everything so far, one paper" over the pre-registered split, a
+  documented deviation, not a silent one. The draft (built via
+  `bio_ai_homeostasis/notebooks/build_full_paper_docx.py`, python-docx)
+  covers: Abstract; Introduction (C-BMI motivation, anticipatory-vs-
+  reactive novelty claim, six contributions); Related Work (Man et al.
+  2022, BioLogicalNeuron, NeuroLoRA, HoSNN, Ji et al. 2024 hallucination
+  detection, active-inference framing, and the review's own "this is
+  just adaptive optimization" concern); Methods (controller mechanism,
+  toy task, three scale-up architectures, the seven-notebook
+  investigation designs, statistical methodology); Results in six
+  subsections (toy-scale ladder incl. the anticipatory rejection,
+  calibration, the scale-up reversal, the full self-correcting
+  disturbance-driver investigation narrative including both retracted
+  intermediate conclusions, MNIST real-data validation, the persisting
+  Qwen3-0.6B+LoRA null); Discussion (a unified task-difficulty account
+  reframing the toy-vs-real-data results as one story, the Cohen's-d
+  methodological caution, an honest unresolved gap against gradient
+  clipping/LR schedulers); Limitations (six items, including the scope
+  deviation itself); Conclusion; References (six citations, all pulled
+  from the verified [[literature-landscape]] matrix, none fabricated).
+  `plan.doc` itself was NOT edited to reflect the scope-change decision
+  (binary WPS .doc, would need COM automation, not done this session) --
+  the deviation is recorded here and in the draft's own opening note
+  instead. This is a first draft for the user's own review/revision, not
+  a submission-ready manuscript -- `plan.doc` item 28's academic-paper-
+  reviewer pass has not yet been run.
